@@ -24,6 +24,18 @@ create_instance_param_file = function(params, instance_dir){
 
 
 run_mpfm_instance = function(params, data_dir_path="./data", delete_instance_dir_when_done=T){
+    desc = "Metapopulation Fragmentation Model (mpfm)
+    v1.0
+
+    A individual-based model of metapopopulation dynamics in spatiotemporally stochastic environments.
+
+    University of Colorado at Boulder
+    Dept. Ecology and Evolutionary Biology | Flaxman Lab
+    Michael Catchen | michael.catchen@colorado.edu"
+    
+    sprintf(desc)
+    
+    
     instance_dir_name = params$DATA_DIRECTORY
     instance_dir = mk_mpfm_instance_directory(data_dir_path, instance_dir_name)
     
@@ -41,7 +53,9 @@ run_mpfm_instance = function(params, data_dir_path="./data", delete_instance_dir
     
     # Aggregate all runs if more than one 
     
-    
+
+
+
     # Clean uo run directory 
     if (delete_instance_dir_when_done){
         unlink(instance_dir, recursive=T) 
