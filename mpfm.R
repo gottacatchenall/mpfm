@@ -37,6 +37,7 @@ run_mpfm_instance = function(params, data_dir_path="./data", delete_instance_dir
     system(cmd)
     
     # Get data back in correct form
+        # condence into 
     
     # Aggregate all runs if more than one 
     

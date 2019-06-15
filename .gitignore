@@ -5,7 +5,6 @@
 *.dSYM/
 ./data/*
 ./mpfmdata/
-./bin/mpfm
 .RData
 .RHistory
 bin/mpfm.dSYM/

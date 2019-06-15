@@ -1,0 +1,3 @@
+[submodule "src/mpfm_core"]
+	path = src/mpfm_core
+	url = https://github.com/gottacatchenall/mpfm_core
