@@ -6,6 +6,7 @@
 ./data/*
 ./mpfmdata/
 .RData
+.RDataTmp
 .RHistory
 bin/mpfm.dSYM/
 bin/mpfm

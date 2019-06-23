@@ -63,8 +63,8 @@ draw_lines_between_points = function(pop_locations, resistance_values, decay_str
                  
                     dist = sqrt((x2-x1)^2 + (y2-y1)^2)
                     
-                    # opac = exp(-1*decay_str*dist)
-                    opac = 1.0
+                    opac = exp(-1*decay_str*dist)
+                    #opac = 1.0
                     width = mig_prop
                     
                     df[line_ct,] = c(x1,y1, grp_ct, opac, width, color)
