@@ -8,6 +8,7 @@ source_files = function(){
   source('./src/rpkg/ld_networks.R')
   source('./src/rpkg/spatial_vis.R')
   load_network_packages()
+  load_req_libraries()
 }
 
 

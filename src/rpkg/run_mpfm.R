@@ -5,6 +5,7 @@ run_mpfm_single = function(){
   dir_path = initialize_mpfm_instance(params)
   
   log_status(paste("Executing single instance of MPFM in", dir_path))
+  #handle = execute_mpfm_instance(dir_path)
   execute_mpfm_instance(dir_path)
   log_status(paste("MPFM instance in", dir_path, "completed."))
   
@@ -37,6 +38,8 @@ run_batch_mpfm = function(param_dictionary, n_reps=1){
 
   cartesian_product_of_params = expand.grid(param_dictionary)
   treat_ct = 0
+  
+  handles = c()
   for (i in seq(1,nrow(cartesian_product_of_params))){
     this_set = cartesian_product_of_params[i,]
     this_treatment_param_df = param_df
@@ -46,13 +49,22 @@ run_batch_mpfm = function(param_dictionary, n_reps=1){
       this_treatment_param_df = set_parameter_value(this_treatment_param_df, param, val)
     }
     
-    print(this_treatment_param_df)
+    
+    plan(multiprocess)
+    
+
+    
     for (rep_ct in seq(1,n_reps)){
       this_path = paste("treatment", treat_ct, "_rep", rep_ct, sep="")
       instance_dir_path = initialize_mpfm_instance(this_treatment_param_df, this_path)
+      handle = execute_mpfm_instance(rep_ct)
+      handles = c(handles, handle)
     }
+  
     treat_ct = treat_ct + 1
   }
+  
+  return(handles)
 }
 
 # =================================
@@ -114,17 +126,12 @@ initialize_mpfm_instance = function(params, instance_dir_name=NULL, data_dir_pat
     return(instance_dir)
 }
 
-execute_mpfm_instance = function(instance_dirs, delete_instance_dir_when_done=F){
-  for (instance_dir in instance_dirs){
+execute_mpfm_instance %<-% function(instance_dir){
     mpfm_exe_path = "./bin/mpfm"
     cmd = paste(mpfm_exe_path, instance_dir)
-    print(cmd)
     system(cmd)
-    # Clean uo run directory
-    if (delete_instance_dir_when_done){
-      unlink(instance_dir, recursive=T)
-    }
-  }
+    #handle = spawn_process(mpfm_exe_path, instance_dir)
+    return(handle)
 }
 
 
