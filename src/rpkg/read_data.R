@@ -5,7 +5,7 @@ load_req_libraries = function(){
     library(progress)
     library(RColorBrewer)
     library(tools)
-    library(subprocess)    
+    library(subprocess)
     library(future)
     library(gridExtra)
 }
@@ -27,8 +27,8 @@ merge_dfs = function(all, this_dir){
 read_indiv_pop_data = function(indiv_pop_path, demo_path, id){
     demography = read.csv(demo_path)
     indiv_pop = read.csv(indiv_pop_path)
-    
-    pop_data_this_run = indiv_pop %>% full_join(demography, by=c("generation", "population")) 
+
+    pop_data_this_run = indiv_pop %>% full_join(demography, by=c("generation", "population"))
     pop_data_this_run[is.na(pop_data_this_run)] = 0
     pop_data_this_run$id = id
     return(pop_data_this_run)
@@ -44,8 +44,8 @@ read_pairwise_pop_data = function(pairwise_dist_path, pairwise_ld_path, dispersa
     pop_dist = read.csv(pairwise_dist_path)
     pairwise_ld = read.csv(pairwise_ld_path)
     dispersal = read.csv(dispersal_path)
-    
-    pairwise_data_this_run = pop_dist %>% right_join(pairwise_ld, by=c("pop1"="population1","pop2"="population2")) %>% left_join(dispersal, by=c("generation", "pop1"="populationA", "pop2"="populationB")) 
+
+    pairwise_data_this_run = pop_dist %>% right_join(pairwise_ld, by=c("pop1"="population1","pop2"="population2")) %>% left_join(dispersal, by=c("generation", "pop1"="populationA", "pop2"="populationB"))
     pairwise_data_this_run[is.na(pairwise_data_this_run)] = 0
     pairwise_data_this_run$id = id
     return(pairwise_data_this_run)
@@ -57,17 +57,17 @@ read_metadata_file = function(metadata_path, id){
     rownames(metadata_table) = metadata_table[,1]
     names = metadata_table[,1]
     vals = metadata_table[,2]
-    
+
     metadata = data.frame(matrix(ncol=length(names)))
     colnames(metadata) = names
     metadata[1,] = t(vals)
-    metadata$id = id 
+    metadata$id = id
     return(metadata)
 }
 
-read_data = function(dir){ 
+read_data = function(dir){
     load_req_libraries()
-    
+
     # Path names
     pops_path = "populations.csv"
     pop_dist_path = "pop_distance.csv"
@@ -76,20 +76,20 @@ read_data = function(dir){
     dispersal_path = "dispersal.csv"
     demography_path = "demography.csv"
     metadata_path = "params.ini"
-    
+
     # Data frames
     pairwise_loci_data = NULL
     pairwise_pop_data = NULL
     population_data = NULL
     metadata = NULL
     run_id = 0
-    
+
     pb = progress_bar$new(total= length(list.files(dir)))
-    
+
     for (direc in list.files(dir)){
         abs_path = paste(dir, direc, sep="/")
         pb$tick()
-        
+
         # Get paths for this dir
         this_dirs_metadata_path = paste(abs_path, "/", metadata_path, sep="")
         this_dirs_dispersal_path = paste(abs_path, "/", dispersal_path, sep="")
@@ -98,8 +98,8 @@ read_data = function(dir){
         this_dirs_pop_data_path = paste(abs_path, "/", pops_path, sep="")
         this_dirs_pairwise_ld_path = paste(abs_path, "/", pairwise_pop_ld_path, sep="")
         this_dirs_pairwise_dist_path = paste(abs_path, "/", pop_dist_path, sep="")
-        
-        
+
+
         # Read this dir data
         tryCatch({
             print(run_id)
@@ -107,7 +107,7 @@ read_data = function(dir){
             this_dirs_pop_data = read_indiv_pop_data(this_dirs_pop_data_path, this_dirs_demography_path, run_id)
             this_dirs_pairwise_loci_data = read_pairwise_loci_data(this_dirs_pairwise_loci_path, run_id)
             this_dirs_pairwise_pop_data = read_pairwise_pop_data(this_dirs_pairwise_dist_path, this_dirs_pairwise_ld_path, this_dirs_dispersal_path, run_id)
-            
+
             # Merge this dir with the rest
             pairwise_loci_data = merge_dfs(pairwise_loci_data, this_dirs_pairwise_loci_data)
             pairwise_pop_data = merge_dfs(pairwise_pop_data, this_dirs_pairwise_pop_data)
@@ -120,7 +120,7 @@ read_data = function(dir){
         )
         run_id = run_id + 1
     }
-    
+
     return(list(population_data, pairwise_pop_data, pairwise_loci_data, metadata))
 }
 

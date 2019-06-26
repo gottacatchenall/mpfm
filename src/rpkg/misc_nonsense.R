@@ -10,16 +10,14 @@ ggplot(subset(loci_data, pop1 == 0 & pop2 == 1), aes(generation, modularity, gro
 
 # mod
 this_tmp_df  = loci_data %>% right_join(pairwise_data, by=c("pop1"="pop1","pop2"="pop2", "generation"="generation", "id"="id"))
-plt1 = ggplot(subset(this_tmp_df, threshold == 0.01), aes(generation, modularity, color=dist, group=interaction(threshold,pop1, pop2))) + geom_point() + geom_line()
-plt2 = ggplot(subset(this_tmp_df, threshold == 0.01), aes(generation, clustering, color=dist, group=interaction(threshold,pop1, pop2))) + geom_point() + geom_line()
+plt1 = ggplot(subset(this_tmp_df), aes(generation, modularity, color=dist, group=interaction(threshold,pop1, pop2))) + geom_point() + geom_line() + facet_wrap(. ~ threshold)
+plt2 = ggplot(subset(this_tmp_df), aes(generation, clustering, color=dist, group=interaction(threshold,pop1, pop2))) + geom_point() + geom_line() + facet_wrap(. ~ threshold)
 grid.arrange(plt1, plt2)
 
 
 
 ## LD Networks
 plot_ld_network_over_time(subset(loci_data, pop1 == 0 & pop2 == 3), 0.1)
-
-
 
 
 ### Delta LD corrected for distance
@@ -197,5 +195,3 @@ ggplot(diff_from_exp_df, aes(resist, dist_from_exp )) + geom_point() +  geom_smo
 
 
 ggplot(subset(deltas, resist==0), aes(dist, deltald)) + geom_point() + geom_smooth(method='lm')
-
-

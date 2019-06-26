@@ -3,13 +3,15 @@ run_mpfm_single = function(){
   load_requirements()
   params = get_parameters()
   dir_path = initialize_mpfm_instance(params)
-  
+
   log_status(paste("Executing single instance of MPFM in", dir_path))
-  #handle = execute_mpfm_instance(dir_path)
-  execute_mpfm_instance(dir_path)
+  handle = execute_mpfm_instance(dir_path)
+
+  process_wait(handle, timeout = TIMEOUT_INFINITE)
+  #execute_mpfm_instance(dir_path)
   log_status(paste("MPFM instance in", dir_path, "completed."))
-  
-  
+
+
   this_dir = dirname(rstudioapi::getSourceEditorContext()$path)
   data_directory = paste(this_dir, "data", sep="/")
   data = read_data(data_directory)
@@ -18,12 +20,12 @@ run_mpfm_single = function(){
 
 log_status = function(msg, stdout=T){
   now = Sys.time()
-  now_str = format(now,'%B_%d_%Y__%H:%M:%S')
-  
+  now_str = format(now,'%Y-%m-%d--%H:%M:%S:')
   if (stdout){
-    print(paste(now_str, "---", msg))
+    print(paste(now_str, "  ",msg))
   }
 }
+
 
 
 # Take in a dictionary of parameters, do each pairwise combo n_rep time
@@ -38,7 +40,7 @@ run_batch_mpfm = function(param_dictionary, n_reps=1){
 
   cartesian_product_of_params = expand.grid(param_dictionary)
   treat_ct = 0
-  
+
   handles = c()
   for (i in seq(1,nrow(cartesian_product_of_params))){
     this_set = cartesian_product_of_params[i,]
@@ -48,22 +50,20 @@ run_batch_mpfm = function(param_dictionary, n_reps=1){
       print(val)
       this_treatment_param_df = set_parameter_value(this_treatment_param_df, param, val)
     }
-    
-    
-    plan(multiprocess)
-    
 
-    
+
+
+    plan(multiprocess)
     for (rep_ct in seq(1,n_reps)){
       this_path = paste("treatment", treat_ct, "_rep", rep_ct, sep="")
       instance_dir_path = initialize_mpfm_instance(this_treatment_param_df, this_path)
-      handle = execute_mpfm_instance(rep_ct)
-      handles = c(handles, handle)
+#      handle = execute_mpfm_instance(rep_ct)
+#      handles = c(handles, handle)
     }
-  
+
     treat_ct = treat_ct + 1
   }
-  
+
   return(handles)
 }
 
@@ -71,13 +71,10 @@ run_batch_mpfm = function(param_dictionary, n_reps=1){
 # Helper Functions
 # =================================
 set_parameter_value = function(param_df, param_name, value){
-  print(param_name)
-  print(value)
   index = which(param_df$parameter == param_name)
   if (index){
     param_df[index,2] = value
   }
-  print(param_df)
   return(param_df)
 }
 
@@ -119,18 +116,16 @@ initialize_mpfm_instance = function(params, instance_dir_name=NULL, data_dir_pat
 
 
     instance_dir = mk_mpfm_instance_directory(data_dir_path, instance_dir_name)
-    
-    print(instance_dir)
-    
+
     create_instance_param_file(params, instance_dir)
     return(instance_dir)
 }
 
-execute_mpfm_instance %<-% function(instance_dir){
+execute_mpfm_instance = function(instance_dir){
     mpfm_exe_path = "./bin/mpfm"
     cmd = paste(mpfm_exe_path, instance_dir)
-    system(cmd)
-    #handle = spawn_process(mpfm_exe_path, instance_dir)
+    #system(cmd)
+    handle = spawn_process(mpfm_exe_path, instance_dir)
     return(handle)
 }
 
@@ -143,4 +138,3 @@ get_parameters = function(){
     param_df$value = (param_table$Default)
     return(param_df)
 }
-

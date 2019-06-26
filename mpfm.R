@@ -28,5 +28,3 @@ pop_data = data[[1]]
 pairwise_data = data[[2]]
 loci_data = data[[3]]
 metadata = data[[4]]
-
-
