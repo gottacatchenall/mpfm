@@ -1,20 +1,20 @@
 
 param_dict = list(DISPERSAL_DECAY_BURN_IN=c(3.0,0.5), DISPERSAL_DECAY_FRAGMENTATION=c(5.0, 10.0))
-run_mpfm(param_dict, num_replicates = 5)
+#run_mpfm(param_dict, num_replicates = 5)
 
 run_mpfm = function(param_dict, num_replicates = 1, populations=NULL, random_pops_each_run=F, IBR=F){
     if (!housekeeping_checks()){
         return;
     }
-  
+
     treatments = get_treatment_parameter_dfs(param_dict)
-    # How to tell if using IBR or IBD? 
+    # How to tell if using IBR or IBD?
     if (IBR){
       dis_kernel = setup_IBR()
     }
-    
+
     # Otherwise, load custom IBR distances
-  
+
     run_dirs = create_run_directories_for_treatments(treatments, num_replicates, populations=populations)
 
     proc_handles = init_processes(run_dirs, parallel=F)
@@ -47,13 +47,13 @@ log_status = function(msg, stdout=T){
 }
 
 create_random_pops = function(){
-  
+
 }
 
 create_run_directories_for_treatments = function(treatments, num_replicates, populations=NULL, data_dir_path = 'data/'){
     paths = c()
-    
-    # check the length of treatments to see if its a single run or not 
+
+    # check the length of treatments to see if its a single run or not
     treat_ct = 0
     for (treatment in treatments){
         for (rep_ct in seq(1, num_replicates)){
@@ -83,8 +83,8 @@ create_run_directory = function(treatment, data_dir_path, populations=NULL, inst
     this_dir = normalizePath(dirname("."))
     full_path = paste(this_dir, this_instance_path, sep="/")
     dir.create(full_path)
-    
-    # if populations is not null, make sure that the df is correct format and write pops.ini. otherwise generate random pops and write pops ini. check that n_pops is the same as pops df 
+
+    # if populations is not null, make sure that the df is correct format and write pops.ini. otherwise generate random pops and write pops ini. check that n_pops is the same as pops df
     if (!is.null(populations)){
       create_pops_ini_file(populations, full_path)
       nrow(populations)
@@ -96,17 +96,17 @@ create_run_directory = function(treatment, data_dir_path, populations=NULL, inst
       pops = create_random_populations(n_pops, n_indivs)
       create_pops_ini_file(pops, full_path)
     }
-    
+
     bi_dist_decay_str = get_parameter_value(treatment, "DISPERSAL_DECAY_BURN_IN")
     frag_dist_decay_str = get_parameter_value(treatment, "DISPERSAL_DECAY_FRAGMENTATION")
-    
-    
-    
+
+
+
     bi_diskern = get_ibd_diskern(pops, dist_decay_str)
     frag_diskern = get_ibd_diskern(pops, frag_dist_decay_str)
-    
+
     genome = get_default_genome(treatment)
-    
+
     create_genome_ini_file(genome, full_path)
     create_genome_ini_file(genome, full_path)
     create_diskern_ini_file(bi_diskern, full_path,  file_name="diskern_pre.ini")
@@ -121,18 +121,18 @@ get_default_genome = function(treatment){
   n_loci_per_ef = get_parameter_value(treatment, "N_FITNESS_LOCI_PER_EF")
   n_loci = n_neutral + (n_ef * n_loci_per_ef)
   n_chromo = get_parameter_value(treatment, "N_CHROMOSOMES")
-  
+
   genome_length = get_parameter_value(treatment, "GENOME_LENGTH")
   init_poly_mean = get_parameter_value(treatment, "INIT_NUM_ALLELES_MEAN")
-  
+
   map_dist_step = genome_length / n_loci
-  
+
   genome = data.frame(matrix(ncol=6,nrow=1))
   # map distance is distance from 0 on that chromosome
   colnames(genome) = c("locus","selection_str","ef","chromosome","map_distance","init_polymorphism")
-  
+
   loci_per_ch = ceiling(n_loci / n_chromo)
-  
+
   chromo_num = 0
   map_ct = 0.0
   for (l in seq(0,n_loci-1)){
@@ -140,13 +140,13 @@ get_default_genome = function(treatment){
       map_ct = 0.0
       chromo_num = chromo_num + 1
     }
-    map_ct = map_ct + map_dist_step 
+    map_ct = map_ct + map_dist_step
     poly_ct = rpois(1, init_poly_mean)
-    
+
     genome[l,] = c(l,0,-1,chromo_num,map_ct,poly_ct)
   }
-  
-  
+
+
   for (ef in seq(0, n_ef-1)){
     this_ef_loci = sample(seq(1,n_loci), n_loci_per_ef)
     print(this_ef_loci)
@@ -161,15 +161,15 @@ get_default_genome = function(treatment){
 
 get_ibd_diskern = function(pops, str){
   n_pops = nrow(pops)
-  
+
   kern = matrix(nrow=n_pops, ncol=n_pops)
-  
+
   for (i in seq(1, n_pops)){
     i_x = pops[i,1]
     i_y = pops[i,2]
-    
+
     row_sum = 0
-    
+
     for (j in seq(1, n_pops)){
       if (i != j){
         j_x = pops[j,1]
@@ -183,19 +183,19 @@ get_ibd_diskern = function(pops, str){
         kern[i,j] = 0
       }
     }
-    
+
     for (j in seq(1, n_pops)){
       #print('not normalizing dis kern')
        kern[i,j] = kern[i,j] / row_sum
     }
   }
-  
+
   return(kern)
 }
 
 create_random_populations = function(n_pops, n_indivs){
   k = n_indivs / n_pops
-  
+
   populations = data.frame(matrix(ncol=4))
   colnames(populations) = c("x", "y", "k", "ef0")
   for (i in seq(1, n_pops)){
@@ -234,7 +234,7 @@ create_pops_ini_file = function(pops, full_path){
 
 create_params_ini_file = function(treatment, full_path){
   params_to_write = subset(treatment, value != "")
-    
+
   path = paste(full_path, "params.ini", sep="/")
   write.table(params_to_write, file=path, sep=",", row.names = F, col.names= F, quote=F)
 }
@@ -309,7 +309,7 @@ load_r_packages = function(){
     library(subprocess)
     library(future)
     library(gridExtra)
-  
+
     return(1)
 }
 
