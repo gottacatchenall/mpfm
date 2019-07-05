@@ -4,7 +4,7 @@
 setwd("~/mpfmR")
 source('./mpfm.R')
 
-param_dict = list("SAMPLE_SIZE"=c(-1, 30, 10), "N_INDIVIDUALS"=c(1000))
+param_dict = list("SAMPLE_SIZE"=c(-1, 0.01, 0.2, 0.5), "N_INDIVIDUALS"=c(1000, 2000, 5000))
 run_mpfm(param_dict, mpfm_path="~/mpfmR", num_replicates = 5)
 
 load_r_packages()
