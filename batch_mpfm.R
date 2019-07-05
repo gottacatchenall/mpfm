@@ -1,14 +1,11 @@
 
 
 
-
+setwd("~/mpfmR")
+source('./mpfm.R')
 
 param_dict = list("SAMPLE_SIZE"=c(-1, 30, 10), "N_INDIVIDUALS"=c(1000))
-run_mpfm(param_dict, num_replicates = 1)
-
-
-setwd("~/Projects/mpfmR")
-source('./mpfm.R')
+run_mpfm(param_dict, mpfm_path="~/mpfmR", num_replicates = 5)
 
 load_r_packages()
 data = read_data('./data', single=F)

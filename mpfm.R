@@ -2,8 +2,8 @@
 param_dict = list(SAMPLE_SIZE=c(-1, 0.1, 0.2, 0.5 ), N_INDIVIDUALS=c(1000, 2000, 5000))
 #run_mpfm(param_dict, num_replicates = 5)
 
-run_mpfm = function(param_dict, num_replicates = 1, populations=NULL, random_pops_each_run=F, IBR=F){
-    if (!housekeeping_checks()){
+run_mpfm = function(param_dict, num_replicates = 1, populations=NULL, random_pops_each_run=F, mpfm_path = "~/Projects/mpfm",IBR=F){
+    if (!housekeeping_checks(mpfm_path=mpfm_path)){
         return;
     }
 
@@ -102,7 +102,7 @@ create_run_directory = function(treatment, data_dir_path, populations=NULL, inst
 
 
 
-    bi_diskern = get_ibd_diskern(pops, dist_decay_str)
+    bi_diskern = get_ibd_diskern(pops, bi_dist_decay_str)
     frag_diskern = get_ibd_diskern(pops, frag_dist_decay_str)
 
     genome = get_default_genome(treatment)
@@ -288,8 +288,7 @@ read_default_params = function(){
 }
 
 
-housekeeping_checks = function(){
-    mpfm_path = '~/Projects/mpfmR/'
+housekeeping_checks = function(mpfm_path="~/Projects/mpfmR"){
     setwd(mpfm_path)
     package_st = load_r_packages()
     compilation_st = compile_mpfmcore()
