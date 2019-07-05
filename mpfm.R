@@ -1,5 +1,5 @@
 
-param_dict = list(DISPERSAL_DECAY_BURN_IN=c(3.0,0.5), DISPERSAL_DECAY_FRAGMENTATION=c(5.0, 10.0))
+param_dict = list(SAMPLE_SIZE=c(-1, 0.1, 0.2, 0.5 ), N_INDIVIDUALS=c(1000, 2000, 5000))
 #run_mpfm(param_dict, num_replicates = 5)
 
 run_mpfm = function(param_dict, num_replicates = 1, populations=NULL, random_pops_each_run=F, IBR=F){
@@ -128,6 +128,7 @@ get_default_genome = function(treatment){
   map_dist_step = genome_length / n_loci
 
   genome = data.frame(matrix(ncol=6,nrow=1))
+  #genome = na.omit(genome)
   # map distance is distance from 0 on that chromosome
   colnames(genome) = c("locus","selection_str","ef","chromosome","map_distance","init_polymorphism")
 
@@ -156,7 +157,7 @@ get_default_genome = function(treatment){
       genome[l,3] = ef
     }
   }
-  return(genome)
+  return(na.omit(genome))
 }
 
 get_ibd_diskern = function(pops, str){
@@ -309,6 +310,10 @@ load_r_packages = function(){
     library(subprocess)
     library(future)
     library(gridExtra)
+  
+    source('./src/rpkg/read_data.R')
+    source('./src/rpkg/spatial_vis.R')
+    source('./src/rpkg/read_data.R')
 
     return(1)
 }
