@@ -1,5 +1,5 @@
 
-param_dict = list(SAMPLE_SIZE=c(-1, 0.1, 0.2, 0.5 ), N_INDIVIDUALS=c(1000, 2000, 5000))
+param_dict = list(SAMPLE_SIZE=c(-1, 0.1, 0.2, 0.5), N_INDIVIDUALS=c(1000, 2000, 5000), RANDOM_SEED=c(5))
 #run_mpfm(param_dict, num_replicates = 5)
 
 run_mpfm = function(param_dict, num_replicates = 1, populations=NULL, random_pops_each_run=F, mpfm_path = "~/Projects/mpfm",IBR=F){
