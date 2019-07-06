@@ -9,7 +9,7 @@ source('./mpfm.R')
 # N_NEUTRAL ADJUST 
 param_dict = list("N_INDIVIDUALS"=c(1000, 2000, 5000), "N_FITNESS_LOCI_PER_EF"=c(0, 10, 30))
 #run_mpfm(param_dict, mpfm_path="~/mpfmR", num_replicates = 5)
-create_run_dirs_and_create_lb_file(fixed_n_loci = 60)
+create_run_dirs_and_create_lb_file(fixed_n_loci = 60, mpfm_path="/projects/mica5688/mpfm/bin/mpfm", data_dir_path="/scratch/summit/mica5688")
 #load_r_packages()
 #data = read_data('./data', single=F)
 #pairwise_data = data[[1]]
