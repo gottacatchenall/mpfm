@@ -67,7 +67,7 @@ read_data = function(dir, single=F){
       direcs = list.files(dir)
     }
     
-    for (direc in direcs){
+    for (direc in direcs){ 
       abs_path = ""
       if (single){
         abs_path = direc
@@ -78,7 +78,7 @@ read_data = function(dir, single=F){
         pb$tick()
 
         # Get paths for this dir
-        this_dirs_params_path = paste(abs_path, "/", params_path, sep="")
+        this_dirs_params_path = paste(abs_path, "/", params_path,  sep="")
         this_dirs_individual_pops_path = paste(abs_path, "/", indiv_pops_path, sep="")
         this_dirs_pairwise_pops_path = paste(abs_path, "/", pairwise_pops_path, sep="")
         this_dirs_genome_path = paste(abs_path, "/", genome_path, sep="")
@@ -87,8 +87,9 @@ read_data = function(dir, single=F){
         tryCatch({
             print(run_id)
             #this_dirs_pararms = read_metadata_file(this_dirs_metadata_path, run_id)
-            this_dirs_indiv_pops = read.csv(this_dirs_individual_pops_path,  stringsAsFactors=F, na.strings="unknown")
+            this_dirs_indiv_pops = read.csv(this_dirs_individual_pops_path, row.names=NULL, stringsAsFactors=F, na.strings="unknown")
             this_dirs_indiv_pops$id = rep(run_id, nrow(this_dirs_indiv_pops))
+            colnames(this_dirs_indiv_pops) = c("generation","pop1","x","y","w_mean","prop_of_k","effective_migration","prop_of_loci_fixed","mean_polymorphism_ct_per_locus","ef0", "blank","sample_size","id")
             this_dirs_indiv_pops[] <- lapply(this_dirs_indiv_pops, function(x) as.numeric(as.character(x)))
             
             this_dirs_pairwise_pop_data = read.csv(this_dirs_pairwise_pops_path, stringsAsFactors=F, na.strings="unknown")

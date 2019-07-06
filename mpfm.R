@@ -50,25 +50,51 @@ create_random_pops = function(){
 
 }
 
-create_run_directories_for_treatments = function(treatments, num_replicates, populations=NULL, same_pops_for_each_treatment=F, data_dir_path = 'data'){
+create_run_directories_for_treatments = function(treatments, num_replicates, populations=NULL, same_pops_for_each_treatment=F, data_dir_path = 'data', lb_file_path=NULL, lb_data_dir=NULL, mpfm_path = NULL){
     paths = c()
 
     # check the length of treatments to see if its a single run or not
     treat_ct = 0
     for (treatment in treatments){
-      if (same_pops_for_each_treatment){
-        n_pops = get_parameter_value(treatment, "N_POPULATIONS")
-        n_indivs = get_parameter_value(treatment, "N_INDIVIDUALS")
-        populations = create_random_populations(n_pops, n_indivs)
-      }
+        if (same_pops_for_each_treatment){
+          n_pops = get_parameter_value(treatment, "N_POPULATIONS")
+          n_indivs = get_parameter_value(treatment, "N_INDIVIDUALS")
+          populations = create_random_populations(n_pops, n_indivs)
+        }
+     
+      this_treatment_paths = c()
         for (rep_ct in seq(1, num_replicates)){
+          
             run_dir_path = paste("treatment", treat_ct, "_rep", rep_ct, sep="")
             instance_path = create_run_directory(treatment, data_dir_path, populations=populations, instance_dir_name = run_dir_path)
             paths = c(paths, instance_path)
+            this_treatment_paths = c(this_treatment_paths, instance_path)
+            
         }
+      
+        if (!is.null(lb_file_path)){
+          # write each rep to a unique treatment file 
+          treatment_lb_path = paste(lb_file_path, treat_ct, ".txt",sep="")
+          create_lb_file(this_treatment_paths, mpfm_path, treatment_lb_path, lb_data_dir)
+        }
+        
+
+      
         treat_ct = treat_ct + 1
     }
     return(paths)
+}
+
+create_lb_file = function(run_dirs, mpfm_path, lb_file_path, data_dir_path){
+  print(paste(mpfm_path, lb_file_path, data_dir_path))
+  for (dir in run_dirs){
+    # dir is relative path to real dir, data_dir_path is within 
+    dir_full = paste(data_dir_path, "/", dir, sep="")
+    print(dir_full)
+    #dir_full = dir
+    exe_string = paste(mpfm_path, " ", dir_full, ";", sep="" )
+    write(exe_string,file=lb_file_path,append=TRUE)
+  }
 }
 
 create_run_directory = function(treatment, data_dir_path, populations=NULL, instance_dir_name = NULL){
@@ -301,24 +327,17 @@ read_default_params = function(){
     return(param_df)
 }
 
-create_run_dirs_and_create_lb_file = function(num_replicates = 5, fixed_n_loci=60, mpfm_path="./bin/mpfm", data_dir_path="./data", lb_file_path="./lb_file.txt"){
+create_run_dirs_and_create_lb_file = function(param_dict, num_replicates = 5, fixed_n_loci=60, mpfm_path="./bin/mpfm", data_dir_path="./data", lb_file_path=NULL, lb_data_dir=NULL){
   if (!housekeeping_checks()){
     return;
   }
   treatments = get_treatment_parameter_dfs(param_dict, fixed_n_loci = fixed_n_loci)
-  run_dirs = create_run_directories_for_treatments(treatments, num_replicates, populations=NULL, same_pops_for_each_treatment = T)
-  lb_file = create_lb_file(run_dirs, mpfm_path, lb_file_path, data_dir_path)
+  
+  ## Each treatment needs its own lb_file, wil n_rep lines.
+  run_dirs = create_run_directories_for_treatments(treatments, num_replicates, populations=NULL, same_pops_for_each_treatment = T, lb_file_path=lb_file_path, mpfm_path = mpfm_path, data_dir_path = data_dir_path, lb_data_dir = lb_data_dir)
+  # create_lb_file(run_dirs, mpfm_path='./bin/mpfm', lb_file_path='', data_dir_path='')
+  # lb_file = create_lb_file(run_dirs, mpfm_path, lb_file_path, data_dir_path)
 }
-
-create_lb_file = function(run_dirs, mpfm_path, lb_file_path, data_dir_path){
-  for (dir in run_dirs){
-    dir_full = paste(data_dir_path, "/", dir, sep="")
-    exe_string = paste(mpfm_path, " ", dir_full, ";", sep="" )
-    write(exe_string,file=lb_file_path,append=TRUE)
-  }
-}
-
-
 
 housekeeping_checks = function(mpfm_path="~/Projects/mpfmR"){
     setwd(mpfm_path)
