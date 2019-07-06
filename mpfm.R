@@ -60,11 +60,13 @@ create_run_directories_for_treatments = function(treatments, num_replicates, pop
           n_pops = get_parameter_value(treatment, "N_POPULATIONS")
           n_indivs = get_parameter_value(treatment, "N_INDIVIDUALS")
           populations = create_random_populations(n_pops, n_indivs)
+
         }
      
       this_treatment_paths = c()
+
         for (rep_ct in seq(1, num_replicates)){
-          
+            n_pops = get_parameter_value(treatment, "N_POPULATIONS")
             run_dir_path = paste("treatment", treat_ct, "_rep", rep_ct, sep="")
             instance_path = create_run_directory(treatment, data_dir_path, populations=populations, instance_dir_name = run_dir_path)
             paths = c(paths, instance_path)
@@ -86,11 +88,9 @@ create_run_directories_for_treatments = function(treatments, num_replicates, pop
 }
 
 create_lb_file = function(run_dirs, mpfm_path, lb_file_path, data_dir_path){
-  print(paste(mpfm_path, lb_file_path, data_dir_path))
   for (dir in run_dirs){
     # dir is relative path to real dir, data_dir_path is within 
     dir_full = paste(data_dir_path, "/", dir, sep="")
-    print(dir_full)
     #dir_full = dir
     exe_string = paste(mpfm_path, " ", dir_full, ";", sep="" )
     write(exe_string,file=lb_file_path,append=TRUE)
@@ -100,7 +100,6 @@ create_lb_file = function(run_dirs, mpfm_path, lb_file_path, data_dir_path){
 create_run_directory = function(treatment, data_dir_path, populations=NULL, instance_dir_name = NULL){
     # make sure ./data exists and create it if not?
     #dir.create(data_dir_path, warning=F)
-
 
     # this will never be true atm
     if (is.null(instance_dir_name)){
@@ -116,9 +115,18 @@ create_run_directory = function(treatment, data_dir_path, populations=NULL, inst
     dir.create(full_path)
 
     # if populations is not null, make sure that the df is correct format and write pops.ini. otherwise generate random pops and write pops ini. check that n_pops is the same as pops df
+    bi_dist_decay_str = get_parameter_value(treatment, "DISPERSAL_DECAY_BURN_IN")
+    frag_dist_decay_str = get_parameter_value(treatment, "DISPERSAL_DECAY_FRAGMENTATION")
+    
+    
+    bi_diskern = NULL
+    frag_diskern = NULL
     if (!is.null(populations)){
+      n_pops = get_parameter_value(treatment, "N_POPULATIONS")
+      n_indivs = get_parameter_value(treatment, "N_INDIVIDUALS")
       create_pops_ini_file(populations, full_path)
-      nrow(populations)
+      bi_diskern = get_ibd_diskern(populations, bi_dist_decay_str)
+      frag_diskern = get_ibd_diskern(populations, frag_dist_decay_str)
       # make sure n_pops in treatment df is same as nrow of pop df
     }
     else{
@@ -126,15 +134,9 @@ create_run_directory = function(treatment, data_dir_path, populations=NULL, inst
       n_indivs = get_parameter_value(treatment, "N_INDIVIDUALS")
       pops = create_random_populations(n_pops, n_indivs)
       create_pops_ini_file(pops, full_path)
+      bi_diskern = get_ibd_diskern(pops, bi_dist_decay_str)
+      frag_diskern = get_ibd_diskern(pops, frag_dist_decay_str)
     }
-
-    bi_dist_decay_str = get_parameter_value(treatment, "DISPERSAL_DECAY_BURN_IN")
-    frag_dist_decay_str = get_parameter_value(treatment, "DISPERSAL_DECAY_FRAGMENTATION")
-
-
-
-    bi_diskern = get_ibd_diskern(pops, bi_dist_decay_str)
-    frag_diskern = get_ibd_diskern(pops, frag_dist_decay_str)
 
     genome = get_default_genome(treatment)
 
@@ -181,7 +183,6 @@ get_default_genome = function(treatment){
 
   for (ef in seq(0, n_ef-1)){
     this_ef_loci = sample(seq(1,n_loci), n_loci_per_ef)
-    print(this_ef_loci)
     for (l in this_ef_loci){
       sel = runif(1)
       genome[l,2] = sel
@@ -193,7 +194,6 @@ get_default_genome = function(treatment){
 
 get_ibd_diskern = function(pops, str){
   n_pops = nrow(pops)
-
   kern = matrix(nrow=n_pops, ncol=n_pops)
 
   for (i in seq(1, n_pops)){

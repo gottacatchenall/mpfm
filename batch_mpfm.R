@@ -5,14 +5,15 @@ setwd("~/Projects/mpfmR")
 source('./mpfm.R')
 
 ## LOCAL
-create_run_dirs_and_create_lb_file(param_dict, num_replicates = 5, fixed_n_loci = 60, mpfm_path="./bin/mpfm", data_dir_path="./data", lb_data_dir = "/scratch/summit/mica5688", lb_file_path="lbfile")
+param_dict_local = list("N_INDIVIDUALS"=c(1000, 2000, 5000), "N_FITNESS_LOCI_PER_EF"=c(0, 10, 30), "N_POPULATIONS"=c(10,20,50))
+create_run_dirs_and_create_lb_file(param_dict_local, num_replicates = 5, fixed_n_loci = 60, mpfm_path="./bin/mpfm", data_dir_path="./data", lb_data_dir = "/scratch/summit/mica5688", lb_file_path="lbfile")
 
 # ================================================================
 #  stuff to run
 #  batch on summit
 # ================================================================
-param_dict = list("N_INDIVIDUALS"=c(1000, 2000, 5000), "N_FITNESS_LOCI_PER_EF"=c(0, 10, 30), "N_POPULATIONS"=c(10,20,50))
-create_run_dirs_and_create_lb_file(param_dict, num_replicates = 50, fixed_n_loci = 60, mpfm_path="/projects/mica5688/mpfm/bin/mpfm", data_dir_path="./data", lb_data_dir = "/scratch/summit/mica5688", lb_file_path="lbfile")
+param_dict_summit = list("N_INDIVIDUALS"=c(1000, 2000, 5000), "N_FITNESS_LOCI_PER_EF"=c(0, 10, 30), "N_POPULATIONS"=c(10,20,50))
+create_run_dirs_and_create_lb_file(param_dict_summit, num_replicates = 50, fixed_n_loci = 60, mpfm_path="/projects/mica5688/mpfm/bin/mpfm", data_dir_path="./data", lb_data_dir = "/scratch/summit/mica5688", lb_file_path="lbfile")
 
 
 
