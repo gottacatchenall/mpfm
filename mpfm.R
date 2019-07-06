@@ -50,12 +50,17 @@ create_random_pops = function(){
 
 }
 
-create_run_directories_for_treatments = function(treatments, num_replicates, populations=NULL, data_dir_path = 'data/'){
+create_run_directories_for_treatments = function(treatments, num_replicates, populations=NULL, same_pops_for_each_treatment=F, data_dir_path = 'data/'){
     paths = c()
 
     # check the length of treatments to see if its a single run or not
     treat_ct = 0
     for (treatment in treatments){
+      if (same_pops_for_each_treatment){
+        n_pops = get_parameter_value(treatment, "N_POPULATIONS")
+        n_indivs = get_parameter_value(treatment, "N_INDIVIDUALS")
+        populations = create_random_populations(n_pops, n_indivs)
+      }
         for (rep_ct in seq(1, num_replicates)){
             run_dir_path = paste("treatment", treat_ct, "_rep", rep_ct, sep="")
             full_dir_path = create_run_directory(treatment, data_dir_path, populations=populations, instance_dir_name = run_dir_path)
@@ -245,9 +250,8 @@ create_genomes_ini_file = function(genome, full_path){
   write.table(genome, file=path, sep=",", row.names = F, col.names= F, quote=F)
 }
 
-get_treatment_parameter_dfs = function(param_dict){
+get_treatment_parameter_dfs = function(param_dict, fixed_n_loci = NULL){
     cartesian_product_of_params = expand.grid(param_dict)
-
     base_df = read_default_params()
 
     treatment_dfs = list()
@@ -258,6 +262,16 @@ get_treatment_parameter_dfs = function(param_dict){
         val = this_set[[param]]
         this_treatment_param_df = set_parameter_value(this_treatment_param_df, param, val)
       }
+      
+      if (!is.null(fixed_n_loci)){
+          N_EF = get_parameter_value(this_treatment_param_df, "EF_NUMBER")
+          N_LOCI_PER_EF = get_parameter_value(this_treatment_param_df, "N_FITNESS_LOCI_PER_EF")
+          n_fitness = N_EF * N_LOCI_PER_EF
+          n_neutral = fixed_n_loci - n_fitness
+          this_treatment_param_df = set_parameter_value(this_treatment_param_df, "N_NEUTRAL_LOCI", n_neutral)
+      }
+      
+      
       treatment_dfs[[i]] = this_treatment_param_df
     }
     return(treatment_dfs)
@@ -286,6 +300,23 @@ read_default_params = function(){
     param_df$value = (param_table$Default)
     return(param_df)
 }
+
+create_run_dirs_and_create_lb_file = function(num_replicates = 5, fixed_n_loci=60, mpfm_path="./bin/mpfm", lb_file_path="./lb_file.txt"){
+  if (!housekeeping_checks()){
+    return;
+  }
+  treatments = get_treatment_parameter_dfs(param_dict, fixed_n_loci = fixed_n_loci)
+  run_dirs = create_run_directories_for_treatments(treatments, num_replicates, populations=NULL, same_pops_for_each_treatment = T)
+  lb_file = create_lb_file(run_dirs, mpfm_path, lb_file_path)
+}
+
+create_lb_file = function(run_dirs, mpfm_path, lb_file_path){
+  for (dir in run_dirs){
+    exe_string = paste(mpfm_path, " ", dir, ";", sep="" )
+    write(exe_string,file=lb_file_path,append=TRUE)
+  }
+}
+
 
 
 housekeeping_checks = function(mpfm_path="~/Projects/mpfmR"){
